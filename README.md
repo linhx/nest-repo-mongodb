@@ -2,23 +2,46 @@
 
 Example
 
-1. Interface
+1. Import module
+
+```typescript
+import RepositoryMongodbModule from '@linhx/nest-repo-mongodb';
+import { Module } from '@nestjs/common';
+import { MongooseModule } from '@nestjs/mongoose';
+import { ProductModule } from './product/product.module';
+
+@Module({
+  imports: [
+    MongooseModule.forRoot(process.env.MONGO_DB_URL, {
+      dbName: process.env.MONGO_DB_NAME,
+      replicaSet: process.env.MONGO_DB_REPLICA,
+    }),
+    RepositoryMongodbModule.forRoot(),
+    ProductModule,
+  ],
+})
+export class AppModule {}
+
+```
+
+2. Interface
 
 ```typescript
 // product.repository.ts
 
-import { CSession, Repository } from '@linhx/nest-repo-mongodb';
+import { Transaction, Repository } from '@linhx/nest-repo';
 import { Product } from './entities/product.entity';
 
 export interface ProductRepository extends Repository<Product> {
-  findByStore(sess: CSession, storeId: string): Promise<Product[]>;
+  findByStore(trx: Transaction, storeId: string): Promise<Product[]>;
 }
 
 export const ProductRepositoryProviderName = 'ProductRepository';
 
+
 ```
 
-2. Implementation
+3. Implementation
 
 ```typescript
 // product.repository.impl.ts
@@ -28,10 +51,15 @@ import {
   ProductRepositoryProviderName,
 } from './product.repository';
 import { Product, ProductDocument } from './entities/product.entity';
-import { ClassProvider, Injectable } from '@nestjs/common';
+import { ClassProvider, Inject, Injectable } from '@nestjs/common';
 import { InjectModel } from '@nestjs/mongoose';
 import { Model } from 'mongoose';
-import { CSession, Db, RepositoryImpl } from '@linhx/nest-repo-mongodb';
+import {
+  MongoTransaction,
+  DbMongo,
+  RepositoryImpl,
+} from '@linhx/nest-repo-mongodb';
+import { DB_PROVIDER } from '@linhx/nest-repo';
 
 @Injectable()
 export class ProductRepositoryImpl
@@ -39,14 +67,14 @@ export class ProductRepositoryImpl
   implements ProductRepository
 {
   constructor(
-    private readonly db: Db,
+    @Inject(DB_PROVIDER) private readonly db: DbMongo,
     @InjectModel(Product.name) private productModel: Model<ProductDocument>,
   ) {
     super(db, productModel);
   }
 
-  findByStore(sess: CSession, storeId: string): Promise<Product[]> {
-    return this.findAll(sess, {
+  findByStore(trx: MongoTransaction, storeId: string): Promise<Product[]> {
+    return this.findAll(trx, {
       storeId,
     });
   }

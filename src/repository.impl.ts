@@ -1,39 +1,39 @@
+import { Repository } from '@linhx/nest-repo';
 import { PagingDto } from '@linhx/rest-common';
 import { Model } from 'mongoose';
-import { CSession, Db } from './db';
-import { Repository } from './repository';
+import { DbMongo, MongoTransaction } from './db.mongo';
 
 export class RepositoryImpl<T> implements Repository<T> {
-  constructor(private _db: Db, private _model: Model<any>) {}
-  create(sess: CSession, t: T): Promise<T> {
-    return this._db.withTransaction(sess, (_sess) => {
-      return this._model.create([t], { session: _sess });
+  constructor(private _db: DbMongo, private _model: Model<any>) {}
+  create(trx: MongoTransaction, t: T): Promise<T> {
+    return this._db.withTransaction(trx, (_trx) => {
+      return this._model.create([t], { session: _trx });
     });
   }
-  update(sess: CSession, t: T): Promise<T> {
-    return this._db.withTransaction(sess, (_sess) => {
+  update(trx: MongoTransaction, t: T): Promise<T> {
+    return this._db.withTransaction(trx, (_trx) => {
       return this._model
-        .findByIdAndUpdate((t as any)._id, t, { session: _sess })
+        .findByIdAndUpdate((t as any)._id, t, { session: _trx })
         .exec();
     });
   }
-  save(sess: CSession, t: T): Promise<T> {
+  save(trx: MongoTransaction, t: T): Promise<T> {
     throw new Error('Method not implemented.');
   }
-  delete(sess: CSession, t: T): Promise<T> {
-    return this._db.withTransaction(sess, (_sess) => {
+  delete(trx: MongoTransaction, t: T): Promise<T> {
+    return this._db.withTransaction(trx, (_trx) => {
       return this._model
-        .findByIdAndDelete((t as any)._id, { session: _sess })
+        .findByIdAndDelete((t as any)._id, { session: _trx })
         .exec();
     });
   }
   findAll(
-    sess: CSession,
+    trx: MongoTransaction,
     condition?: Partial<T>,
-    paging?: PagingDto,
+    paging?: PagingDto
   ): Promise<T[]> {
-    return this._db.withTransaction(sess, (_sess) => {
-      const query = this._model.find(condition).session(_sess);
+    return this._db.withTransaction(trx, (_trx) => {
+      const query = this._model.find(condition).session(_trx);
 
       if (paging) {
         query.limit(paging.limit).skip(paging.getSkip()).sort(paging.sort);
@@ -41,9 +41,9 @@ export class RepositoryImpl<T> implements Repository<T> {
       return query.exec();
     });
   }
-  count(sess: CSession, condition?: Partial<T>): Promise<number> {
-    return this._db.withTransaction(sess, (_sess) => {
-      return this._model.countDocuments(condition, { session: _sess }).exec();
+  count(trx: MongoTransaction, condition?: Partial<T>): Promise<number> {
+    return this._db.withTransaction(trx, (_trx) => {
+      return this._model.countDocuments(condition, { session: _trx }).exec();
     });
   }
 }

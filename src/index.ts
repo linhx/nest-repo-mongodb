@@ -1,4 +1,21 @@
-export { RepositoryModule } from './repository.module';
-export { Repository } from './repository';
+import { DB_PROVIDER } from '@linhx/nest-repo';
+import { DynamicModule, Global } from '@nestjs/common';
+import { DbMongo } from './db.mongo';
+export { DbMongo, MongoTransaction } from './db.mongo';
 export { RepositoryImpl } from './repository.impl';
-export { Db, CSession } from './db';
+
+const DbMongoProvider = {
+  provide: DB_PROVIDER,
+  useClass: DbMongo,
+};
+
+@Global()
+export default class RepositoryMongodbModule {
+  static forRoot(): DynamicModule {
+    return {
+      module: RepositoryMongodbModule,
+      providers: [DbMongoProvider],
+      exports: [DbMongoProvider],
+    };
+  }
+}
