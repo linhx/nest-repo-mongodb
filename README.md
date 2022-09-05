@@ -1,6 +1,15 @@
 # nest-repo-mongodb
 
-Example
+Achieve abstraction in repository pattern (NestJs)
+
+## Install
+
+```shell
+npm i @nestjs/mongoose mongoose
+npm i @linhx/nest-repo @linhx/nest-repo-mongodb
+```
+
+## Example
 
 1. Import module
 
