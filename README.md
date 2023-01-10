@@ -39,9 +39,10 @@ export class AppModule {}
 // product.repository.ts
 
 import { Transaction, Repository } from '@linhx/nest-repo';
+import { ObjectId } from 'mongoose';
 import { Product } from './entities/product.entity';
 
-export interface ProductRepository extends Repository<Product> {
+export interface ProductRepository extends Repository<Product, ObjectId> {
   findByStore(trx: Transaction, storeId: string): Promise<Product[]>;
 }
 
