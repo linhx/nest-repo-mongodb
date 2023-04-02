@@ -1,6 +1,6 @@
 {
   "name": "@linhx/nest-repo-mongodb",
-  "version": "0.0.12",
+  "version": "0.0.14",
   "description": "",
   "main": "lib/index.js",
   "scripts": {
@@ -17,10 +17,10 @@
   },
   "homepage": "https://github.com/linhx/nest-repo-mongodb#readme",
   "dependencies": {
-    "@linhx/rest-common": "^0.0.3"
+    "@linhx/rest-common": "^0.0.4"
   },
   "peerDependencies": {
-    "@linhx/nest-repo": "^0.0.5",
+    "@linhx/nest-repo": "^0.0.6",
     "@nestjs/common": "^8.0.0 || ^9.0.0",
     "@nestjs/mongoose": "^9.2.0",
     "mongoose": "^6.5.4"
