@@ -6,8 +6,14 @@ import { DbMongo, MongoTransaction } from './db.mongo';
 export class RepositoryImpl<T, U> implements Repository<T, U> {
   constructor(private _db: DbMongo, private _model: Model<any>) {}
   create(trx: MongoTransaction, t: T): Promise<T> {
+    return this._db.withTransaction(trx, async (_trx) => {
+      const [entity] = await this._model.create([t], { session: _trx });
+      return entity;
+    });
+  }
+  createMany(trx: MongoTransaction, ...ts: T[]): Promise<T> {
     return this._db.withTransaction(trx, (_trx) => {
-      return this._model.create([t], { session: _trx });
+      return this._model.create(ts, { session: _trx });
     });
   }
   update(trx: MongoTransaction, t: T): Promise<T> {
