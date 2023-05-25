@@ -2,6 +2,7 @@ import { Repository, TransactionStore } from '@linhx/nest-repo';
 import { PagingDto } from '@linhx/rest-common';
 import { ClientSession, Model } from 'mongoose';
 import { DbMongo } from './db.mongo';
+import { DeleteResult } from '@linhx/nest-repo/lib/repository';
 
 export class RepositoryImpl<T, U> implements Repository<T, U> {
   constructor(
@@ -67,8 +68,15 @@ export class RepositoryImpl<T, U> implements Repository<T, U> {
       })
       .exec();
   }
-  async deleteAll(): Promise<void> {
-    await this._model
+  async deleteMany(t: Partial<T>): Promise<DeleteResult> {
+    return await this._model
+      .deleteMany(t, {
+        session: this.transactionStore.getTransaction() as ClientSession,
+      })
+      .exec();
+  }
+  async deleteAll(): Promise<DeleteResult> {
+    return await this._model
       .deleteMany(
         {},
         { session: this.transactionStore.getTransaction() as ClientSession }
@@ -82,8 +90,8 @@ export class RepositoryImpl<T, U> implements Repository<T, U> {
       })
       .exec();
   }
-  async deleteAllById(ids: U[]): Promise<void> {
-    await this._model
+  async deleteAllById(ids: U[]): Promise<DeleteResult> {
+    return await this._model
       .deleteMany(
         { _id: { $in: ids } },
         { session: this.transactionStore.getTransaction() as ClientSession }
