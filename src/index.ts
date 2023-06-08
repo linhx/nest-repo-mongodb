@@ -20,6 +20,17 @@ export const DbMongoProvider: Provider = {
   provide: DB_PROVIDER,
   useClass: DbMongo,
 };
+const defaultEventEmitterProvider: Provider<TransactionalEventEmitter> = {
+  provide: TRANSACTIONAL_EVENT_EMITTER_PROVIDER,
+  useValue: {
+    emit(data) {
+      return true;
+    },
+    onCommitted(listener) {
+      return this;
+    },
+  },
+};
 
 export type EventEmitterProvider =
   | Omit<ClassProvider<TransactionalEventEmitter>, 'provide'>
@@ -29,14 +40,19 @@ export type EventEmitterProvider =
 
 @Module({})
 export default class RepositoryMongodbModule {
-  static forRoot(options: {
+  static forRoot(options?: {
     global?: boolean;
-    eventEmitterProvider: EventEmitterProvider;
+    eventEmitterProvider?: EventEmitterProvider;
   }): DynamicModule {
-    const eventEmitterProvider = {
-      ...options.eventEmitterProvider,
-      provide: TRANSACTIONAL_EVENT_EMITTER_PROVIDER,
-    } as Provider<TransactionalEventEmitter>;
+    let eventEmitterProvider;
+    if (options?.eventEmitterProvider) {
+      eventEmitterProvider = {
+        ...options.eventEmitterProvider,
+        provide: TRANSACTIONAL_EVENT_EMITTER_PROVIDER,
+      } as Provider<TransactionalEventEmitter>;
+    } else {
+      eventEmitterProvider = defaultEventEmitterProvider;
+    }
 
     return {
       module: RepositoryMongodbModule,
